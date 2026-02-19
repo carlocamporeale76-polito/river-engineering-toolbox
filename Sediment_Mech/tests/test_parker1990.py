@@ -1,5 +1,5 @@
 import pandas as pd
-from core.parker1990 import compute_parker1990
+from Sediment_Mech.core.parker1990 import compute_parker1990
 
 def test_parker_runs():
     df = pd.DataFrame({
