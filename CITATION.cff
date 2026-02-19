@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: "River Engineering Toolbox"
+version: "1.0.0"
+doi: "10.5281/zenodo.18702576"
+authors:
+  - family-names: "Camporeale"
+    given-names: "Carlo"
+  - family-names: "Salerno"
+    given-names: "L."
+  - family-names: "Siviglia"
+    given-names: "N."
+date-released: 2025-01-01
+repository-code: "https://github.com/carlocamporeale76-polito/river-engineering-toolbox"
