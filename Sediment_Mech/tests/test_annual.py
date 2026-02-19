@@ -1,5 +1,5 @@
 import pandas as pd
-from core.annual import compute_annual_bedload
+from Sediment_Mech.core.annual import compute_annual_bedload
 
 def test_annual_runs():
 
