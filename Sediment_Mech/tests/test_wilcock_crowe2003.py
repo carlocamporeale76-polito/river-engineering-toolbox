@@ -1,5 +1,5 @@
 import pandas as pd
-from core.wilcock_crowe2003 import compute_wilcock_crowe2003
+from Sediment_Mech.core.wilcock_crowe2003 import compute_wilcock_crowe2003
 
 def test_wc2003_runs():
     df = pd.DataFrame({
