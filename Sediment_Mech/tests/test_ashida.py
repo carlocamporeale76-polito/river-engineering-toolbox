@@ -1,5 +1,5 @@
 import pandas as pd
-from core.ashida_michiue import compute_ashida_michiue
+from Sediment_Mech.core.ashida_michiue import compute_ashida_michiue
 
 def test_basic_run():
     df = pd.DataFrame({
