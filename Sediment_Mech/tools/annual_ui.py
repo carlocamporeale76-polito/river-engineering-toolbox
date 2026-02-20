@@ -17,8 +17,8 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from Sediment_Mech.core.io import read_psd_surface_csv, read_fdc_csv
-from Sediment_Mech.core.annual import compute_annual_bedload
+from Sediment_Mech.Core.io import read_psd_surface_csv, read_fdc_csv
+from Sediment_Mech.Core.annual import compute_annual_bedload
 
 
 def render() -> None:
