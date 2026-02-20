@@ -3,7 +3,7 @@ Sediment_Mech.tools.gsd_ui
 Streamlit UI for the GSD Calculator tool.
 
 Expected to be called as `render()` from the chapter hub page.
-Relies on `Sediment_Mech.core.io.read_gsd_xlsx` (or equivalent) to parse uploaded Excel.
+Relies on `Sediment_Mech.Core.io.read_gsd_xlsx` (or equivalent) to parse uploaded Excel.
 """
 
 from __future__ import annotations
@@ -16,11 +16,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 try:
-    from Sediment_Mech.core.io import read_gsd_xlsx
+    from Sediment_Mech.Core.io import read_gsd_xlsx
 except Exception:
     # fallback: try import from gsd_io (if user placed function there)
     try:
-        from Sediment_Mech.core.gsd_io import read_gsd_xlsx  # type: ignore
+        from Sediment_Mech.Core.gsd_io import read_gsd_xlsx  # type: ignore
     except Exception:
         read_gsd_xlsx = None  # type: ignore
 
