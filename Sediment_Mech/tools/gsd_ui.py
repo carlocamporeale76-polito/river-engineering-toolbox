@@ -1,5 +1,6 @@
 # Sediment_Mech/tools/gsd_ui.py
-st.write("DEBUG: new GSD UI version loaded")
+import os
+st.write("Module path:", os.path.abspath(__file__))
 from __future__ import annotations
 import io
 import pandas as pd
