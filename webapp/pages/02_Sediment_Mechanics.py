@@ -18,20 +18,26 @@ st.write("Select a tool or section from the panel below.")
 # Navigation for subpages/tools
 PAGES = {
     "Overview & Theory": None,
-    "Surface-based bedload (full tool)": render_bedload,
     "GSD Calculator": render_gsd,
-    "Annual bedload integration (spreadsheet)": render_annual,
+    "Surface-based bedload (full tool)": render_bedload,    
+    "Annual bedload integration": render_annual,
 }
 
 choice = st.sidebar.selectbox("Choose subpage", list(PAGES.keys()))
 
 # Render overview (static text + link to QR/DOI)
 if choice == "Overview & Theory":
+    st.header("GSD Calculator — overview")
+    st.markdown(
+        "..."
     st.header("Surface-based bedload transport — overview")
     st.markdown(
         "This chapter implements theory and provides tools for: "
         "- surface-based bedload relations (Ashida, Parker, Wilcock & Crowe), "
         "GSD processing, and annual integration. Use the menu at left to open a tool."
+    st.header("Annual bedload integration — overview")
+    st.markdown(
+        "..."
     )
 else:
     render_fn = PAGES[choice]
