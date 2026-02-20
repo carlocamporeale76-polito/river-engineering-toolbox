@@ -4,12 +4,12 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
-from Sediment_mech.core.io import read_psd_surface_csv, read_fdc_csv
-from Sediment_mech.core.annual import compute_annual_bedload
-from Sediment_mech.core.active_layer import geometric_mean_Dsg, sorting_sigma_s_log2
-from Sediment_mech.core.ashida_michiue import compute_ashida_michiue
-from Sediment_mech.core.parker1990 import compute_parker1990
-from Sediment_mech.core.wilcock_crowe2003 import compute_wilcock_crowe2003
+from Sediment_Mech.core.io import read_psd_surface_csv, read_fdc_csv
+from Sediment_Mech.core.annual import compute_annual_bedload
+from Sediment_Mech.core.active_layer import geometric_mean_Dsg, sorting_sigma_s_log2
+from Sediment_Mech.core.ashida_michiue import compute_ashida_michiue
+from Sediment_Mech.core.parker1990 import compute_parker1990
+from Sediment_Mech.core.wilcock_crowe2003 import compute_wilcock_crowe2003
 
 
 st.set_page_config(page_title="Ch.2 — Sediment Mechanics", layout="wide")
