@@ -33,11 +33,6 @@ if choice == "Overview & Theory":
         "- surface-based bedload relations (Ashida, Parker, Wilcock & Crowe), "
         "GSD processing, and annual integration. Use the menu at left to open a tool."
     )
-    st.markdown(
-        "Interactive web calculator: "
-        "[Streamlit app](https://river-engineering-toolbox-8bvdo2ohn6rc5sikkgujd3.streamlit.app/)."
-    )
-    st.image("Figures/qr_toolbox_streamlit.png", width=160)
 else:
     render_fn = PAGES[choice]
     if render_fn is None:
