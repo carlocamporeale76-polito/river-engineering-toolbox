@@ -7,8 +7,8 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 import streamlit as st
-from Sediment_Mech.tools.bedload_ui import render as render_bedload
 from Sediment_Mech.tools.gsd_ui import render as render_gsd
+from Sediment_Mech.tools.bedload_ui import render as render_bedload
 from Sediment_Mech.tools.annual_ui import render as render_annual  # optional
 
 st.set_page_config(page_title="Ch.2 — Sediment Mechanics", layout="wide")
@@ -30,11 +30,13 @@ if choice == "Overview & Theory":
     st.header("GSD Calculator — overview")
     st.markdown(
         "..."
+    )    
     st.header("Surface-based bedload transport — overview")
     st.markdown(
         "This chapter implements theory and provides tools for: "
         "- surface-based bedload relations (Ashida, Parker, Wilcock & Crowe), "
         "GSD processing, and annual integration. Use the menu at left to open a tool."
+    )    
     st.header("Annual bedload integration — overview")
     st.markdown(
         "..."
