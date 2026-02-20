@@ -2,7 +2,7 @@
 Sediment_Mech.tools.bedload_ui
 Streamlit UI for the Surface-based bedload transport tool (chapter hub).
 Provides sidebar inputs, uploads for PSD and FDC, model selection and run.
-Relies on core computational functions from Sediment_Mech.core.*
+Relies on core computational functions from Sediment_Mech.Core.*
 The heavy numerical work should be implemented in core functions (compute_annual_bedload, compute_parker1990, etc).
 """
 
@@ -20,14 +20,14 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-# Core functions (these must exist in Sediment_Mech.core)
+# Core functions (these must exist in Sediment_Mech.Core)
 try:
-    from Sediment_Mech.core.io import read_psd_surface_csv, read_fdc_csv
-    from Sediment_Mech.core.annual import compute_annual_bedload
-    from Sediment_Mech.core.active_layer import geometric_mean_Dsg, sorting_sigma_s_log2
-    from Sediment_Mech.core.ashida_michiue import compute_ashida_michiue
-    from Sediment_Mech.core.parker1990 import compute_parker1990
-    from Sediment_Mech.core.wilcock_crowe2003 import compute_wilcock_crowe2003
+    from Sediment_Mech.Core.io import read_psd_surface_csv, read_fdc_csv
+    from Sediment_Mech.Core.annual import compute_annual_bedload
+    from Sediment_Mech.Core.active_layer import geometric_mean_Dsg, sorting_sigma_s_log2
+    from Sediment_Mech.Core.ashida_michiue import compute_ashida_michiue
+    from Sediment_Mech.Core.parker1990 import compute_parker1990
+    from Sediment_Mech.Core.wilcock_crowe2003 import compute_wilcock_crowe2003
 except Exception:
     # If imports fail, we still allow the UI to load and surface an error on Run.
     read_psd_surface_csv = read_fdc_csv = compute_annual_bedload = None
