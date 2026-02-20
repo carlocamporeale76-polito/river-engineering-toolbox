@@ -1,124 +1,147 @@
-"""
-Sediment_Mech.tools.gsd_ui
-Streamlit UI for the GSD Calculator tool.
-
-Expected to be called as `render()` from the chapter hub page.
-Relies on `Sediment_Mech.Core.io.read_gsd_xlsx` (or equivalent) to parse uploaded Excel.
-"""
-
+# Sediment_Mech/tools/gsd_ui.py
 from __future__ import annotations
 import io
-import os
-from typing import Optional
-
-import streamlit as st
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 
-try:
-    from Sediment_Mech.Core.io import read_gsd_xlsx
-except Exception:
-    # fallback: try import from gsd_io (if user placed function there)
-    try:
-        from Sediment_Mech.Core.gsd_io import read_gsd_xlsx  # type: ignore
-    except Exception:
-        read_gsd_xlsx = None  # type: ignore
+from Sediment_Mech.Core import gsd_io
 
-EXAMPLES_DIR = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")), "examples")
-EXAMPLE_XLSX = os.path.join(EXAMPLES_DIR, "GSDCalculator_example.xlsx")
+st.set_option("deprecation.showPyplotGlobalUse", False)
 
+def _make_template_excel() -> bytes:
+    """Return a small XLSX bytes object usable as template (D_mm, percent)."""
+    df = pd.DataFrame({
+        "D_mm": [0.5, 1, 2, 4, 8, 16],
+        "percent": [5, 10, 20, 30, 25, 10]
+    })
+    bio = io.BytesIO()
+    with pd.ExcelWriter(bio, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="GSD")
+    return bio.getvalue()
 
-def _plot_psd(df: pd.DataFrame) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(7, 3.5))
-    # bar width proportional to size (log scale)
-    widths = df["D_i_m"].astype(float).values * 0.12
-    ax.bar(df["D_i_m"].astype(float), df["f_i"].astype(float), width=widths, align="center")
-    ax.set_xscale("log")
-    ax.set_xlabel("Grain size $D_i$ (m)")
-    ax.set_ylabel("Surface fraction $f_i$")
-    ax.grid(True, which="both", alpha=0.25)
-    return fig
+def _plot_size_distribution(df: pd.DataFrame):
+    """Bar plot of class percent vs diameter (mm)."""
+    D_mm = df["D_i_m"].values * 1000.0
+    perc = df["f_i"].values * 100.0
+    fig, ax = plt.subplots(figsize=(6,3.5))
+    ax.bar(D_mm.astype(float), perc, width=np.diff(np.append(D_mm, D_mm[-1]*1.2)), align='center')
+    ax.set_xscale('log')
+    ax.set_xlabel("Diameter (mm)")
+    ax.set_ylabel("Percent (%)")
+    ax.set_title("Grain size distribution (classes)")
+    ax.grid(True, which="both", ls=":", lw=0.5)
+    st.pyplot(fig)
 
+def _plot_cumulative(df: pd.DataFrame):
+    """Cumulative percent vs diameter."""
+    dfc = gsd_io.cumulative_from_gsd(df)
+    D_mm = dfc["D_i_m"].values * 1000.0
+    cum = dfc["cum_percent"].values
+    fig, ax = plt.subplots(figsize=(6,3.5))
+    ax.plot(D_mm, cum, marker='o', linestyle='-')
+    ax.set_xscale('log')
+    ax.set_ylim(0, 100)
+    ax.set_xlabel("Diameter (mm)")
+    ax.set_ylabel("Cumulative percent (%)")
+    ax.set_title("Cumulative grain size curve")
+    ax.grid(True, which="both", ls=":", lw=0.5)
+    st.pyplot(fig)
 
-def render() -> None:
+def _plot_phi_histogram(df: pd.DataFrame):
+    """Histogram of phi distribution using class centers weighted by f_i."""
+    df_phi = df.copy()
+    df_phi["phi"] = df_phi["D_i_m"].apply(gsd_io.phi_from_d)
+    # expand approximate sample for plotting weighting (or use weighted histogram)
+    phi_vals = df_phi["phi"].values
+    weights = df_phi["f_i"].values
+    fig, ax = plt.subplots(figsize=(6,3.5))
+    ax.hist(phi_vals, bins=8, weights=weights, rwidth=0.8)
+    ax.set_xlabel("Phi")
+    ax.set_ylabel("Weighted fraction")
+    ax.set_title("Phi histogram (weighted by f_i)")
+    ax.grid(True, ls=":", lw=0.5)
+    st.pyplot(fig)
+
+def render():
     st.header("GSD Calculator")
-    st.write(
-        "Upload the original Excel file exported from the GSD tool "
-        "or use the synthetic example shipped with the toolbox."
-    )
+    st.write("Carica un file Excel (.xlsx) con la distribuzione granulometrica (foglio 'GSD' o 'Calculator').")
+    col1, col2 = st.columns([1,1])
 
-    col1, col2 = st.columns([2, 1])
-    uploaded = col1.file_uploader("Upload GSD Excel (.xlsx, .xls)", type=["xlsx", "xls"])
-    use_example = col2.button("Load example")
+    with col1:
+        uploaded = st.file_uploader("Upload GSD .xlsx", type=["xlsx"])
+        btn_template = st.button("Download template (.xlsx)")
 
-    if use_example:
-        if os.path.exists(EXAMPLE_XLSX):
-            with open(EXAMPLE_XLSX, "rb") as f:
-                uploaded = io.BytesIO(f.read())
-        else:
-            st.error("Example file not found in examples/ directory.")
-            return
+    with col2:
+        st.markdown("**Opzioni**")
+        normalize_on_load = st.checkbox("Normalizza frazioni all'upload (default ON)", value=True)
+        show_plots_immediately = st.checkbox("Mostra plot automaticamente dopo il calcolo", value=True)
 
-    if uploaded is None:
-        st.info("Please upload a GSD Excel file or press 'Load example' to try the sample.")
-        return
+    if btn_template:
+        data = _make_template_excel()
+        st.download_button("Download GSD template", data, file_name="GSD_template.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    if read_gsd_xlsx is None:
-        st.error("GSD reader function `read_gsd_xlsx` not found. Please ensure `Sediment_Mech.core.io` exposes it.")
-        return
+    df = None
+    if uploaded is not None:
+        # read using gsd_io; handle errors gracefully
+        try:
+            df = gsd_io.read_gsd_xlsx(uploaded)
+            st.success("File caricato e parsato correttamente.")
+            st.write(f"Classi lette: {len(df)}")
+            st.dataframe(df.head(20))
+        except Exception as e:
+            st.error(f"Errore nel parsing del file: {e}")
+            st.stop()
 
-    # Parse the file
-    try:
-        df_psd = read_gsd_xlsx(uploaded)
-    except Exception as e:
-        st.error(f"Error parsing GSD file: {e}")
-        return
+    # Provide compute button if file present
+    if df is not None:
+        compute = st.button("Compute statistics and plots")
+        # allow auto compute if requested
+        if compute or show_plots_immediately:
+            try:
+                out = gsd_io.compute_all_stats(df)
+                stats = out["stats"]
+                percentiles = out["percentiles_m"]
+                table = out["table"]
 
-    # Basic validation
-    if not {"D_i_m", "f_i"}.issubset(df_psd.columns):
-        st.error("Parsed file does not contain required columns 'D_i_m' and 'f_i'.")
-        st.write("Columns found:", list(df_psd.columns))
-        return
+                # Display stats
+                st.subheader("Key statistics")
+                stat_cols = st.columns(3)
+                stat_cols[0].metric("D50 (m)", f"{stats['D50_m']:.6f}" if not pd.isna(stats['D50_m']) else "n/a")
+                stat_cols[1].metric("D16 (m)", f"{stats['D16_m']:.6f}" if not pd.isna(stats['D16_m']) else "n/a")
+                stat_cols[2].metric("D84 (m)", f"{stats['D84_m']:.6f}" if not pd.isna(stats['D84_m']) else "n/a")
 
-    # Normalize fractions if needed
-    s = float(df_psd["f_i"].sum())
-    if abs(s - 1.0) > 1e-6:
-        st.warning(f"Surface fractions sum to {s:.6f}. They will be normalized to sum = 1 for calculations.")
-        df_psd = df_psd.copy()
-        df_psd["f_i"] = df_psd["f_i"] / s
+                st.write("Other statistics")
+                st.json({
+                    "phi_mean": stats.get("phi_mean"),
+                    "phi_std": stats.get("phi_std"),
+                    "geometric_mean_m": stats.get("geometric_mean_m"),
+                    "folk_ward_sort": stats.get("folk_ward_sort")
+                })
 
-    st.subheader("Parsed surface PSD")
-    st.dataframe(df_psd.reset_index(drop=True))
+                st.subheader("Percentiles (meters)")
+                st.table(pd.Series(percentiles).rename("D_p_m").to_frame())
 
-    # Plot
-    fig = _plot_psd(df_psd)
-    st.pyplot(fig, clear_figure=True)
+                st.subheader("Summary table (classes)")
+                st.dataframe(table)
 
-    # Export options
-    csv_bytes = df_psd.to_csv(index=False).encode("utf-8")
-    st.download_button("Download PSD CSV", data=csv_bytes, file_name="psd_surface_from_gsd.csv", mime="text/csv")
+                # plots
+                st.subheader("Plots")
+                _plot_size_distribution(df)
+                _plot_cumulative(df)
+                _plot_phi_histogram(df)
 
-    # Excel export: write PSD to a single-sheet workbook
-    try:
-        from io import BytesIO
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            df_psd.to_excel(writer, sheet_name="surface_psd", index=False)
-        output.seek(0)
-        st.download_button(
-            "Download PSD Excel",
-            data=output.read(),
-            file_name="psd_surface_from_gsd.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-    except Exception:
-        # non-fatal: excel writer not available
-        pass
-
-    st.markdown(
-        "Usage notes:\n\n"
-        "- The reader accepts columns named either `D_i_m` (meters) or `D_i_mm` (millimetres) "
-        "and `f_i` (fraction). If `D_i_mm` is present it will be converted to meters.\n"
-        "- Fractions are normalized automatically if they do not sum to 1.\n"
-        "- The exported CSV is compatible with the Surface-based bedload tool in this chapter."
-    )
+                # allow download of processed table
+                buf = io.BytesIO()
+                with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+                    table.to_excel(writer, index=False, sheet_name="Summary")
+                    pd.DataFrame([stats]).to_excel(writer, index=False, sheet_name="Stats")
+                buf.seek(0)
+                st.download_button("Download processed results (.xlsx)", buf.read(), file_name="GSD_results.xlsx",
+                                   mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            except Exception as e:
+                st.error(f"Errore nel calcolo delle statistiche: {e}")
+                st.stop()
+    else:
+        st.info("Carica un file .xlsx per abilitare il calcolo.")
