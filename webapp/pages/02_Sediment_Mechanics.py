@@ -10,6 +10,7 @@ import streamlit as st
 from Sediment_Mech.tools.gsd_ui import render as render_gsd
 from Sediment_Mech.tools.bedload_ui import render as render_bedload
 from Sediment_Mech.tools.annual_ui import render as render_annual  # optional
+from Sediment_Mech.tools.settling_velocity_ui import render as render_settling
 
 st.set_page_config(page_title="Ch.2 — Sediment Mechanics", layout="wide")
 st.title("Chapter 2 — Sediment Mechanics")
@@ -19,6 +20,7 @@ st.write("Select a tool or section from the panel below.")
 PAGES = {
     "Overview & Theory": None,
     "GSD Calculator": render_gsd,
+    "Settling velocity": render_settling,
     "Surface-based bedload (full tool)": render_bedload,    
     "Annual bedload integration": render_annual,
 }
